@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepGuard AI - Real-time Deepfake Detection</title>
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header Section -->
+        <header class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1 class="app-title">DeepGuard AI</h1>
+                    <p class="app-subtitle">Lightweight Vision Transformer • Real-time Detection</p>
+                </div>
+                <div class="header-badges">
+                    <span class="badge badge-accuracy">⚡ 96.4% Accuracy</span>
+                    <span class="badge badge-params">🧠 5.2M Params</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Detection Mode Buttons -->
+        <section class="mode-selection">
+            <button class="mode-btn active" data-mode="image">
+                <span class="mode-icon">🖼️</span>
+                <span class="mode-label">Image Detection</span>
+            </button>
+            <button class="mode-btn" data-mode="video">
+                <span class="mode-icon">🎥</span>
+                <span class="mode-label">Video Detection</span>
+            </button>
+            <button class="mode-btn" data-mode="camera">
+                <span class="mode-icon">📷</span>
+                <span class="mode-label">Live Camera</span>
+            </button>
+        </section>
+
+        <!-- Dynamic Upload/Action Area -->
+        <section class="upload-section">
+            <h2 class="section-title" id="uploadTitle">Upload Image for Analysis</h2>
+            <div class="upload-container">
+                <!-- File Upload Area -->
+                <div class="dropzone" id="dropzone">
+                    <svg class="upload-icon" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <p class="upload-text">Drag &amp; drop or click to upload</p>
+                    <p class="upload-formats" id="uploadFormats">Supports: JPG, PNG, WEBP</p>
+                    <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.webp" hidden>
+                </div>
+
+                <!-- Camera Activate Button -->
+                <button class="activate-camera-btn" id="activateCameraBtn" style="display: none;">
+                    <span class="camera-icon">📷</span>
+                    <span>Start Camera</span>
+                </button>
+
+                <!-- Camera Area -->
+                <div class="camera-container" id="cameraContainer" style="display: none;">
+                    <div class="video-wrapper">
+                        <video id="cameraVideo" autoplay playsinline muted></video>
+                        <div class="camera-overlay">
+                            <div class="live-badge">🔴 LIVE</div>
+                            <div class="crosshair">
+                                <div class="crosshair-line crosshair-h"></div>
+                                <div class="crosshair-line crosshair-v"></div>
+                                <div class="crosshair-corner tl"></div>
+                                <div class="crosshair-corner tr"></div>
+                                <div class="crosshair-corner bl"></div>
+                                <div class="crosshair-corner br"></div>
+                            </div>
+                            <div class="camera-status">Ready to capture</div>
+                        </div>
+                    </div>
+                    <div class="camera-controls">
+                        <button class="camera-btn camera-btn-capture" id="captureBtn">📷 Capture Frame</button>
+                        <button class="camera-btn camera-btn-flip" id="flipCameraBtn">🔄 Flip Camera</button>
+                        <button class="camera-btn camera-btn-stop" id="stopCameraBtn">⏹️ Stop Camera</button>
+                    </div>
+                </div>
+
+                <!-- Camera Error Message -->
+                <div class="camera-error" id="cameraError" style="display: none;">
+                    <div class="error-icon">⚠️</div>
+                    <p class="error-message" id="errorMessage">Camera access denied</p>
+                    <button class="btn-retry" id="retryBtn">Try Again</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analysis & Results Section -->
+        <section class="analysis-section">
+            <h2 class="section-title">Analysis Results</h2>
+            <div class="results-container">
+                <!-- Initial State -->
+                <div class="no-analysis" id="noAnalysis">
+                    <p>No analysis yet — upload or capture content to begin.</p>
+                </div>
+
+                <!-- Loading State -->
+                <div class="analyzing" id="analyzingState" style="display: none;">
+                    <div class="loader"></div>
+                    <p class="analyzing-text">Analyzing...</p>
+                    <div class="confidence-progress">
+                        <div class="confidence-bar">
+                            <div class="confidence-fill" id="confidenceFill"></div>
+                        </div>
+                        <p class="confidence-label" id="confidenceLabel">Analyzing... 0% confidence</p>
+                    </div>
+                </div>
+
+                <!-- Results Card -->
+                <div class="results-card" id="resultsCard" style="display: none;">
+                    <div class="result-badge" id="resultBadge">✅ Real</div>
+                    <div class="confidence-value" id="confidenceValue">94.7%</div>
+                    <div class="result-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Processing Time:</span>
+                            <span class="detail-value" id="processingTime">1.23 seconds</span>
+                        </div>
+                        <div class="detail-item" id="frameCountContainer">
+                            <span class="detail-label">Frames Analyzed:</span>
+                            <span class="detail-value" id="frameCount">45 frames</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Feature Analysis Section -->
+        <section class="feature-analysis-section" id="featureAnalysis" style="display: none;">
+            <h2 class="section-title">Feature Analysis</h2>
+            <div class="features-container">
+                <div class="feature-item">
+                    <div class="feature-header">
+                        <span class="feature-label">Facial Artifacts</span>
+                        <span class="feature-value" id="facialValue">0%</span>
+                    </div>
+                    <div class="feature-bar">
+                        <div class="feature-fill" id="facialFill"></div>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-header">
+                        <span class="feature-label">Blending Artifacts</span>
+                        <span class="feature-value" id="blendingValue">0%</span>
+                    </div>
+                    <div class="feature-bar">
+                        <div class="feature-fill" id="blendingFill"></div>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-header">
+                        <span class="feature-label">Temporal Consistency</span>
+                        <span class="feature-value" id="temporalValue">0%</span>
+                    </div>
+                    <div class="feature-bar">
+                        <div class="feature-fill" id="temporalFill"></div>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-header">
+                        <span class="feature-label">Attention Score</span>
+                        <span class="feature-value" id="attentionValue">0%</span>
+                    </div>
+                    <div class="feature-bar">
+                        <div class="feature-fill" id="attentionFill"></div>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-header">
+                        <span class="feature-label">Texture Anomaly</span>
+                        <span class="feature-value" id="textureValue">0%</span>
+                    </div>
+                    <div class="feature-bar">
+                        <div class="feature-fill" id="textureFill"></div>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-header">
+                        <span class="feature-label">Compression Artifacts</span>
+                        <span class="feature-value" id="compressionValue">0%</span>
+                    </div>
+                    <div class="feature-bar">
+                        <div class="feature-fill" id="compressionFill"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Detection History Section -->
+        <section class="history-section">
+            <h2 class="section-title">Detection History</h2>
+            <div class="history-container" id="historyContainer">
+                <p class="no-history">No detections yet</p>
+            </div>
+        </section>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
